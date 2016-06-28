@@ -86,7 +86,7 @@ GET /cards/:id -> Returns the card for the given ID
 POST /cards/:id -> Changes properties of the given card
 {   
     "name": "my debit card",
-    "accountsLinded": ['accountId1',''accountId2']
+    "accountsLinked": ['accountId1',''accountId2']
 }
 
 POST /cards/:id/off -> turns card off
