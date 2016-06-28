@@ -9,3 +9,5 @@
 /db_messages
 /db_rates
 /db_transactions
+/db_userDetails
+/db_users
