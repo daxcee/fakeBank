@@ -4,7 +4,7 @@ var parse = require('co-body');
 
 require('../utils.js');
 
-GLOBAL.homeCurrency = "EUR"; //###
+GLOBAL.homeCurrency = "EUR"; //### hardcoded.
 
 
 
@@ -22,7 +22,6 @@ module.exports.all = function* list(next) {
         isMain: -1,
         DTSOpened: 1
     }).exec(); //sort the accounts
-    console.log(allaccounts[0].id);
     //return them all
     this.body = yield allaccounts;
 };
@@ -34,12 +33,10 @@ module.exports.all = function* list(next) {
 module.exports.fetch = function* fetch(id, next) {
     if ('GET' != this.method) return yield next;
     //find accounts which correspond to the userId
-    console.log('hey', this.request.scrap.userId);
     var account = yield this.app.db.accounts.findOne({
         "userId": this.request.scrap.userId,
         "id": id
     }).exec();
-    console.log('hey2');
     if (!account || account.id !== id) this.throw(404, JSON.stringify({
         error: true,
         text: "Error: can't find the account"
@@ -49,15 +46,6 @@ module.exports.fetch = function* fetch(id, next) {
 
 
 
-
-//
-//module.exports.fetch2 = function* fetch(id, id2, next) {
-//    if ('GET' != this.method) return yield next;
-//    var found1 = false;
-//    var found2 = false;
-//    console.log(id, id2);
-//    this.body = yield accounts;
-//};
 
 module.exports.add = function* add(data, next) {
     //adds a new account 
@@ -388,7 +376,7 @@ module.exports.transactionAdd = function* add(id, next) {
         var inserted = yield this.app.db.transactions.insert(tempTran);
         console.log('added the new transaction', body.txnType);
         if (!inserted || inserted < 1) {
-            this.throw(405, "Error: Transaction could not be added.");
+            this.throw(405, "Error: Account could not be added.");
         }
 
     } catch (e) {
