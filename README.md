@@ -201,6 +201,15 @@ POST /messages/:id -> Marks given message as sent and/or read.
 
 
 
+GET /standing/ -> List all standing orders in JSON
+PUT /standing/ -> add a new standing order
+DELETE /standing/:id -> Deletes given standing order.
+
+Note that standing orders do not yet work. fakeBank stores them but does not processes them yet.
+
+
+
+
 OPTIONS / -> Gives the list of allowed request types.
 
 HEAD / -> HTTP headers only, no body.
