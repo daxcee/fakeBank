@@ -1,25 +1,26 @@
 'use strict';
 console.log('fakeBank starting');
-var authentication = require('./controllers/authentication');
-var accounts = require('./controllers/accounts');
-var cards = require('./controllers/cards');
-var beneficiaries = require('./controllers/beneficiaries');
-var transfer = require('./controllers/transfer');
-var user = require('./controllers/user');
-var rates = require('./controllers/rates');
-var requests = require('./controllers/requests');
-var messages = require('./controllers/messages');
+const authentication = require('./controllers/authentication');
+const accounts = require('./controllers/accounts');
+const cards = require('./controllers/cards');
+const beneficiaries = require('./controllers/beneficiaries');
+const transfer = require('./controllers/transfer');
+const user = require('./controllers/user');
+const rates = require('./controllers/rates');
+const requests = require('./controllers/requests');
+const messages = require('./controllers/messages');
+const standing = require('./controllers/standing');
 
-var compress = require('koa-compress');
-var logger = require('koa-logger');
-var serve = require('koa-static');
-var staticCache = require('koa-static-cache')
-var route = require('koa-route');
-var koa = require('koa');
-var cors = require('koa-cors');
-var path = require('path');
-var app = module.exports = koa();
-//var noCache = require('koa-no-cache');
+const compress = require('koa-compress');
+const logger = require('koa-logger');
+const serve = require('koa-static');
+const staticCache = require('koa-static-cache')
+const route = require('koa-route');
+const koa = require('koa');
+const cors = require('koa-cors');
+const path = require('path');
+const app = module.exports = koa();
+//const noCache = require('koa-no-cache');
 
 
 
@@ -54,6 +55,9 @@ app.db.rates = wrap(app.db.rates);
 app.db.messages = new Datastore('db_messages');
 app.db.messages.loadDatabase();
 app.db.messages = wrap(app.db.messages);
+app.db.standing = new Datastore('db_standing');
+app.db.standing.loadDatabase();
+app.db.standing = wrap(app.db.standing);
 
 var generator = require('./generator/processor');
 generator.doImport(app).next();
@@ -69,9 +73,6 @@ rates.doPrefetchRates(app).next();
 
 app.use(logger());
 
-//app.use(noCache({
-//    global: true
-//}));
 
 
 
@@ -189,6 +190,16 @@ app.use(route.get('/messages/', messages.all));
 app.use(route.put('/messages/', messages.add));
 //POST /messages/:id -> Marks given message as sent and/or read.
 app.use(route.post('/messages/:id', messages.modify));
+
+
+
+//GET /standing/ -> List all standing orders in JSON
+app.use(route.get('/standing/', standing.all));
+// PUT /standing/ -> add a new standing order
+app.use(route.put('/standing/', standing.add));  //TODO
+//DELETE /standing/:id -> Deletes given standing order.
+app.use(route.delete('/standing/:id', standing.deleteStanding));
+
 
 
 // Compress
