@@ -129,7 +129,7 @@
     "dayOfMonth": 16,
     "currency": "EUR"
 }, {
-    "srcAccountType": "505",
+    "srcAccountType": "1001",
     "dstAccountType": "",
     "narrative": "PAYPAL *STEAM GAMES 35314369001 GB",
     "txnType": "99",
@@ -245,4 +245,17 @@
     "integer": 0,
     "dayOfMonth": 0,
     "currency": "EUR"
+}, {
+    "srcAccountType": "1001",
+    "dstAccountType": "",
+    "narrative": "AMAZON SERVICES LX",
+    "txnType": "99",
+    "type": "Online",
+    "nPerMonth": 1,
+    "probability": 0.4,
+    "amountMin": -200.00,
+    "amountMax": -9.99,
+    "integer": 0,
+    "dayOfMonth": 7,
+    "currency": "USD"
 }]

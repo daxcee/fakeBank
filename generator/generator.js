@@ -2,18 +2,24 @@ console.log('Generating fake transactions');
 //run this once a month to generate transactions
 //Transactions get stored in a db_future table
 
+//Create a transaction template file and name it as ACCOUNTID_templates.json
+//Run as node generator.js <ACCOUNTID> <MONTHOFFSET>
+//where ACCOUNTID is a an id of the account you generate transactions for
+//MONTHOFFSET can be 0 for a current month, -1 for the previous, 1 for the next one, etc.
+
+
 
 var accountId = process.argv[2];
 var monthShift = process.argv[3] || 0;
-if (!accountId) console.log('no account'); //TODO: break if no account given
+if (!accountId) throw 'no account given. Specify accountId as a command line parameter'; //TODO: break if no account given
 
 var fs = require('fs');
-var templates = JSON.parse(fs.readFileSync('transaction_templates.json', 'utf8'));
+var templates = JSON.parse(fs.readFileSync(accountId + '_templates.json', 'utf8'));
 
 var TempDate = new Date();
 
 var Year = (TempDate).getFullYear();
-var Month = (TempDate).getMonth() - monthShift ;
+var Month = (TempDate).getMonth() + monthShift;
 var daysInMonth = getDaysInMonth(Month + 1, Year);
 
 var tempArray = [];
