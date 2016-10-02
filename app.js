@@ -10,6 +10,7 @@ const rates = require('./controllers/rates');
 const requests = require('./controllers/requests');
 const messages = require('./controllers/messages');
 const standing = require('./controllers/standing');
+const bills = require('./controllers/bills');
 
 const compress = require('koa-compress');
 const logger = require('koa-logger');
@@ -24,8 +25,8 @@ const app = module.exports = koa();
 
 
 
-var Datastore = require('nedb');
-var wrap = require('co-ne-db');
+const Datastore = require('nedb');
+const wrap = require('co-ne-db');
 app.db = {};
 
 app.db.tokens = new Datastore('db_tokens');
@@ -58,8 +59,11 @@ app.db.messages = wrap(app.db.messages);
 app.db.standing = new Datastore('db_standing');
 app.db.standing.loadDatabase();
 app.db.standing = wrap(app.db.standing);
+app.db.bills = new Datastore('db_bills');
+app.db.bills.loadDatabase();
+app.db.bills = wrap(app.db.bills);
 
-var generator = require('./generator/processor');
+const generator = require('./generator/processor');
 generator.doImport(app).next();
 
 rates.doPrefetchRates(app).next();
@@ -77,7 +81,7 @@ app.use(logger());
 
 
 
-var options = {
+const options = {
     origin: '*' //???###!!! Change access control origin
 };
 app.use(cors(options));
@@ -195,10 +199,20 @@ app.use(route.post('/messages/:id', messages.modify));
 
 //GET /standing/ -> List all standing orders in JSON
 app.use(route.get('/standing/', standing.all));
-// PUT /standing/ -> add a new standing order
+//PUT /standing/ -> add a new standing order
 app.use(route.put('/standing/', standing.add));  //TODO
 //DELETE /standing/:id -> Deletes given standing order.
 app.use(route.delete('/standing/:id', standing.deleteStanding));
+
+
+//GET /bills/ -> List all bills in JSON
+app.use(route.get('/bills/', bills.all));
+//GET /bills/paid -> List all bills paid
+app.use(route.get('/bills/paid', bills.paid));
+//GET /bills/unpaid -> List all bills unpaid
+app.use(route.get('/bills/unpaid', bills.unpaid));
+//POST /bills/:id/pay/ -> Gets the bill paid.
+app.use(route.post('/bills/:id', bills.pay));
 
 
 
