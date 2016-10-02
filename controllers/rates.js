@@ -7,11 +7,13 @@ require('../utils.js');
 //GET /rates/ -> List all the currency exchange rates in JSON.
 module.exports.all = function* list(next) {
     if ('GET' != this.method) return yield next;
+    var resp = {};
 
-    var rates = yield this.app.db.rates.find({}).exec();
+    resp.rates = yield this.app.db.rates.find({}).exec();
+    resp.success = true;
 
     //return them all
-    this.body = yield rates;
+    this.body = JSON.stringify(resp);
 };
 
 //POST /rates/:src/:dst/ -> Adds or modifies a rate.
