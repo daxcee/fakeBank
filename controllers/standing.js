@@ -15,7 +15,7 @@ module.exports.all = function* list(next) {
     var allstanding = yield this.app.db.standing.find({
         "userId": this.request.scrap.userId
     }).sort({
-        DTSCreated: 1
+        DTS: 1
     }).exec();
     //return them all
     this.body = yield allstanding;
