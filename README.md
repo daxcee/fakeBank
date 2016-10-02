@@ -17,7 +17,7 @@ node app.js
 
 ```
 
-Open http://localhost:5000 to see the results.
+Open http://localhost:5000 in any REST client.
 
 
 
@@ -199,13 +199,21 @@ POST /messages/:id -> Marks given message as sent and/or read.
 }
 
 
+GET /bills/ -> List all bills in JSON
+GET /bills/paid -> List all bills paid
+GET /bills/unpaid -> List all bills unpaid
+POST /bills/:id/pay/ -> Gets the bill paid.
+{
+    "srcAcc":"k878sg4nsrod" 
+}
+
 
 
 GET /standing/ -> List all standing orders in JSON
 PUT /standing/ -> add a new standing order
 DELETE /standing/:id -> Deletes given standing order.
 
-Note that standing orders do not yet work. fakeBank stores them but does not processes them yet.
+Note that standing orders do not yet work. fakeBank stores them but does not processes them.
 
 
 
