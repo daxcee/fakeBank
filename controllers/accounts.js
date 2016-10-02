@@ -237,7 +237,7 @@ module.exports.modify = function* modify(id, next) {
     resp.success = false;
     try {
         var body = yield parse.json(this);
-        if (!body || ((body.status) && (body.status !== "on") && (body.status !== "off"))) this.throw(405, "Error, status parameter missing ot has wrong value");
+        if (!body || ((body.status) && (body.status !== "on") && (body.status !== "off"))) this.throw(405, "Error, status parameter missing or has wrong value");
 
 
         var account = yield this.app.db.accounts.findOne({
