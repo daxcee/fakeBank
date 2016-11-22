@@ -1,2 +1,2 @@
-{"accountId":"123","amount":-159.11,"currency":"USD","narrative":"AMAZON SERVICES LX","txnType":"99","type":"Online","DTSValue":{"$$date":1477223640000},"DTSBooked":{"$$date":1477241580000},"credit":0,"debit":-159.11,"reference":"ur2f87gm0l","transactionId":"f26eifo677","stateId":"100","labels":[],"transactionState":"RECONCILED","_id":"alhIEh1id2Tmq7HB"}
 {"accountId":"123","amount":-10.94,"currency":"USD","narrative":"AMAZON SERVICES LX","txnType":"99","type":"Online","DTSValue":{"$$date":1478736000000},"DTSBooked":{"$$date":1478736000000},"credit":0,"debit":-10.94,"reference":"8se7abz8a8","transactionId":"r7h0pyokem","stateId":"100","labels":[],"transactionState":"RECONCILED","_id":"t9YDB19QJGaFCF8h"}
+{"$$deleted":true,"_id":"t9YDB19QJGaFCF8h"}

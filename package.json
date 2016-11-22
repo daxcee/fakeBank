@@ -4,7 +4,8 @@
   "description": "Retail bank back-end simulator REST API",
   "main": "app.js",
   "scripts": {
-    "test": "node app.js"
+    "test": "node app.js",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
