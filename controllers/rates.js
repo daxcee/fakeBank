@@ -1,13 +1,13 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
 
 
 //GET /rates/ -> List all the currency exchange rates in JSON.
 module.exports.all = function* list(next) {
     if ('GET' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
 
     resp.rates = yield this.app.db.rates.find({}).exec();
     resp.success = true;
@@ -29,13 +29,13 @@ module.exports.all = function* list(next) {
 module.exports.upsert = function* upsert(next) {
     if ('POST' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.rate || !body.src || !body.dst) this.throw(405, "Error, request body is empty");
 
-        var numChanged = yield this.app.db.rates.update({
+        let numChanged = yield this.app.db.rates.update({
             "src": body.src,
             "dst": body.dst
         }, {
@@ -61,7 +61,7 @@ module.exports.upsert = function* upsert(next) {
 };
 
 
-var co = require('co'); //!!!
+let co = require('co'); //!!!
 
 
 module.exports.doPrefetchRates = function* (app) {
@@ -70,10 +70,10 @@ module.exports.doPrefetchRates = function* (app) {
         console.log('will try prefetching fx rates');
         GLOBAL.fxrates = GLOBAL.fxrates || {};
 
-        var tempfxrates = yield app.db.rates.find({}).exec();
+        let tempfxrates = yield app.db.rates.find({}).exec();
 
         while (GLOBAL.fxrates.pop()) {};
-        for (var i = 0; i < tempfxrates.length; i++) {
+        for (let i = 0; i < tempfxrates.length; i++) {
             GLOBAL.fxrates.push(tempfxrates[i]);
         }
 
@@ -94,7 +94,7 @@ GLOBAL.fxrates.convertCurrency = function (GivenCur1, GivenAmount, GivenCur2) {
     //returns how much is GivenAmount of GivenCur2 in GivenCur1
     function checkIfCurrencyIsKnown(GivenCurrency) {
         //returns false if given currency code is not present in the fxrates array
-        for (var i = 0; i < GLOBAL.fxrates.length; i++) {
+        for (let i = 0; i < GLOBAL.fxrates.length; i++) {
             if (GLOBAL.fxrates[i].src === GivenCurrency || GLOBAL.fxrates[i].dst === GivenCurrency) return true;
         }
         return false;
@@ -102,9 +102,9 @@ GLOBAL.fxrates.convertCurrency = function (GivenCur1, GivenAmount, GivenCur2) {
     if (GivenCur1 === GivenCur2) return GivenAmount;
     if (GLOBAL.fxrates.length < 1) return 0;
     if (!checkIfCurrencyIsKnown(GivenCur1) || !checkIfCurrencyIsKnown(GivenCur2)) return -1;
-    var Found = false,
+    let Found = false,
         Result = 0;
-    for (var i = 0; i < GLOBAL.fxrates.length; i++) {
+    for (let i = 0; i < GLOBAL.fxrates.length; i++) {
         if ((GLOBAL.fxrates[i].src === GivenCur1) && (GLOBAL.fxrates[i].dst === GivenCur2)) {
             Result = GivenAmount * GLOBAL.fxrates[i].sell;
             Found = true;
@@ -116,8 +116,8 @@ GLOBAL.fxrates.convertCurrency = function (GivenCur1, GivenAmount, GivenCur2) {
     }
     if (Found) return Result;
     //No direct rate, so will need to do double conversion via fxrates.homecurrency
-    var temp1 = GLOBAL.fxrates.convertCurrency(GLOBAL.fxrates.homecurrency, GivenAmount, GivenCur2);
-    var temp2 = GLOBAL.fxrates.convertCurrency(GivenCur1, temp1, GLOBAL.fxrates.homecurrency);
+    let temp1 = GLOBAL.fxrates.convertCurrency(GLOBAL.fxrates.homecurrency, GivenAmount, GivenCur2);
+    let temp2 = GLOBAL.fxrates.convertCurrency(GivenCur1, temp1, GLOBAL.fxrates.homecurrency);
     return temp2;
 };
 

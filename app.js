@@ -106,7 +106,7 @@ app.use(function* (next) {
     if (this.request.headers && this.request.headers.token) {
         //request body should include {"token":"sometoken"}
         //validate if token given in the header does exist in DB. 
-        var tokens = yield app.db.tokens.find({
+        let tokens = yield app.db.tokens.find({
             token: this.request.headers.token
         }).exec();
         if (!tokens) this.throw(500, JSON.stringify({
@@ -117,7 +117,7 @@ app.use(function* (next) {
             error: true,
             text: "Wrong token"
         }));
-        console.log('validated token', this.request.headers.token, 'belongs to userId', tokens[0].userId);
+        //console.log('validated token', this.request.headers.token, 'belongs to userId', tokens[0].userId);
         this.request.scrap.userId = tokens[0].userId;
     } else {
         this.throw(404, JSON.stringify({
@@ -212,7 +212,10 @@ app.use(route.get('/bills/paid', bills.paid));
 //GET /bills/unpaid -> List all bills unpaid
 app.use(route.get('/bills/unpaid', bills.unpaid));
 //POST /bills/:id/pay/ -> Gets the bill paid.
-app.use(route.post('/bills/:id', bills.pay));
+app.use(route.post('/bills/:id/pay', bills.pay));
+//GET /bills/history -> List of transactions
+app.use(route.get('/bills/history/', bills.history));
+app.use(route.get('/bills/history/:dateStart/:dateEnd', bills.history));
 
 
 

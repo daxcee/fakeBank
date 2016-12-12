@@ -3,20 +3,20 @@
 //Takes pre-generated transactions from db_future and puts them into db_transactions.
 //Account balance does change.
 //
-var co = require('co'); //!!!
+let co = require('co'); //!!!
 
 
 module.exports.doImport = function* (app) {
 
     yield co(function* () {
         console.log('will try importing new transactions');
-        var fxrates = yield app.db.rates.find({}).exec();
+        let fxrates = yield app.db.rates.find({}).exec();
         fxrates.homecurrency = "EUR"; //???### hardcoded
 
         fxrates.convertCurrency = function (GivenCur1, GivenAmount, GivenCur2) {
             function checkIfCurrencyIsKnown(GivenCurrency) {
                 //returns false if given currency code is not present in the fxrates array
-                for (var i = 0; i < fxrates.length; i++) {
+                for (let i = 0; i < fxrates.length; i++) {
                     if (fxrates[i].src === GivenCurrency || fxrates[i].dst === GivenCurrency) return true;
                 }
                 return false;
@@ -24,9 +24,9 @@ module.exports.doImport = function* (app) {
             if (GivenCur1 === GivenCur2) return GivenAmount;
             if (fxrates.length < 1) return 0;
             if (!checkIfCurrencyIsKnown(GivenCur1) || !checkIfCurrencyIsKnown(GivenCur2)) return -1;
-            var Found = false,
+            let Found = false,
                 Result = 0;
-            for (var i = 0; i < fxrates.length; i++) {
+            for (let i = 0; i < fxrates.length; i++) {
                 if ((fxrates[i].src === GivenCur1) && (fxrates[i].dst === GivenCur2)) {
                     Result = GivenAmount * fxrates[i].sell;
                     Found = true;
@@ -38,46 +38,46 @@ module.exports.doImport = function* (app) {
             }
             if (Found) return Result;
             //No direct rate, so will need to do double conversion via fxrates.homecurrency
-            var temp1 = fxrates.convertCurrency(fxrates.homecurrency, GivenAmount, GivenCur2);
-            var temp2 = fxrates.convertCurrency(GivenCur1, temp1, fxrates.homecurrency);
+            let temp1 = fxrates.convertCurrency(fxrates.homecurrency, GivenAmount, GivenCur2);
+            let temp2 = fxrates.convertCurrency(GivenCur1, temp1, fxrates.homecurrency);
             return temp2;
         };
 
 
-        var accounts = yield app.db.accounts.find({}).exec();
+        let accounts = yield app.db.accounts.find({}).exec();
         findAccount = function (givenAccountID) {
-            for (var i = 0; i < accounts.length; i++) {
+            for (let i = 0; i < accounts.length; i++) {
                 if (givenAccountID === accounts[i].id) return accounts[i];
             }
         }
-        var Datastore = require('nedb');
-        var wrap = require('co-ne-db');
+        let Datastore = require('nedb');
+        let wrap = require('co-ne-db');
 
-        var future = new Datastore({
+        let future = new Datastore({
             filename: './generator/db_future',
             autoload: true
         });
         future = wrap(future);
 
 
-        var futures = yield future.find({}).exec();
-        var toBePosted = [];
-        for (var i = 0; i < futures.length; i++) {
+        let futures = yield future.find({}).exec();
+        let toBePosted = [];
+        for (let i = 0; i < futures.length; i++) {
             if (futures[i].DTSValue < new Date()) {
-                var transactionCurrency = futures[i].currency;
-                var transactionAccount = futures[i].accountId;
-                var accountCurrency = findAccount(transactionAccount).balance.currency;
-                var oldBalance = findAccount(transactionAccount).balance.native;
-                var amountInAccountCurrency = fxrates.convertCurrency(accountCurrency, futures[i].amount, transactionCurrency);
+                let transactionCurrency = futures[i].currency;
+                let transactionAccount = futures[i].accountId;
+                let accountCurrency = findAccount(transactionAccount).balance.currency;
+                let oldBalance = findAccount(transactionAccount).balance.native;
+                let amountInAccountCurrency = fxrates.convertCurrency(accountCurrency, futures[i].amount, transactionCurrency);
                 findAccount(transactionAccount).balance.native += futures[i].credit;
                 findAccount(transactionAccount).balance.native += futures[i].debit;
                 findAccount(transactionAccount).balance.native = parseFloat(parseFloat(Math.round(findAccount(transactionAccount).balance.native * 100) / 100).toFixed(2)); //drop extra decimals
-                var newBalance = findAccount(transactionAccount).balance.native;
+                let newBalance = findAccount(transactionAccount).balance.native;
                 toBePosted.push(futures[i]);
             }
         }
         if (toBePosted.length > 0) {
-            for (var i = 0; i < accounts.length; i++) {
+            for (let i = 0; i < accounts.length; i++) {
                 yield app.db.accounts.update({
                     id: accounts[i].id
                 }, accounts[i]);
@@ -85,7 +85,7 @@ module.exports.doImport = function* (app) {
             console.log('updated account balances');
 
 
-            for (var i = 0; i < toBePosted.length; i++) {
+            for (let i = 0; i < toBePosted.length; i++) {
                 yield app.db.transactions.update({
                     transactionId: toBePosted[i].transactionId
                 }, toBePosted[i], {
@@ -94,7 +94,7 @@ module.exports.doImport = function* (app) {
             }
             //console.log('updated transactions');
 
-            for (var i = 0; i < toBePosted.length; i++) {
+            for (let i = 0; i < toBePosted.length; i++) {
                 yield future.remove({
                     transactionId: toBePosted[i].transactionId
                 }, {

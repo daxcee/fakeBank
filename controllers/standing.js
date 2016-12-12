@@ -1,6 +1,6 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 
 require('../utils.js');
 
@@ -12,7 +12,7 @@ module.exports.all = function* list(next) {
 
     //this.request.scrap.userId should have the user id which corresponds to the token
     //find accounts which correspond to the userId
-    var allstanding = yield this.app.db.standing.find({
+    let allstanding = yield this.app.db.standing.find({
         "userId": this.request.scrap.userId
     }).sort({
         DTS: 1
@@ -28,25 +28,25 @@ module.exports.all = function* list(next) {
 module.exports.add = function* add(data, next) {
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.transactionTypeID) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
         }));
 
-        var user = yield this.app.db.userDetails.findOne({
+        let user = yield this.app.db.userDetails.findOne({
             "userId": this.request.scrap.userId
         }).exec();
 
         if (!user || user.userId !== this.request.scrap.userId) this.throw(405, "Error: can not find the user." + this.request.scrap.userId);
 
-        var tempStanding = {};
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        let tempStanding = {};
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 tempStanding[property] = body[property];
             }
@@ -55,9 +55,9 @@ module.exports.add = function* add(data, next) {
         tempStanding.DTS = new Date();
         tempStanding.userId = user.userId;
         tempStanding.standingId = GLOBAL.GetRandomSTR(12);
-        var tempId = tempStanding.standingId;
+        let tempId = tempStanding.standingId;
 
-        var inserted = yield this.app.db.standing.insert(tempStanding);
+        let inserted = yield this.app.db.standing.insert(tempStanding);
         if (!inserted) {
             this.throw(405, "Error: Failed adding the new standing instruction.");
         }
@@ -79,9 +79,9 @@ module.exports.add = function* add(data, next) {
 //DELETE /standing/:id -> Deletes given standing order.
 module.exports.deleteStanding = function* deleteStanding(id, next) {
     if ('DELETE' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
     try {
-        var standing = yield this.app.db.standing.findOne({
+        let standing = yield this.app.db.standing.findOne({
             "userId": this.request.scrap.userId,
             "standingId": id
         }).exec();
@@ -91,14 +91,14 @@ module.exports.deleteStanding = function* deleteStanding(id, next) {
             text: 'Standing order not found'
         }));
 
-        var user = yield this.app.db.userDetails.findOne({
+        let user = yield this.app.db.userDetails.findOne({
             "userId": this.request.scrap.userId
         }).exec();
 
         if (!user || user.userId !== this.request.scrap.userId) this.throw(405, "Error: can not find the user." + this.request.scrap.userId);
 
 
-        var numChanged = yield this.app.db.standing.remove({
+        let numChanged = yield this.app.db.standing.remove({
             "standingId": id
         }, {});
 

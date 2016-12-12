@@ -1,8 +1,8 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
-var co = require('co'); //!!!
+let co = require('co'); //!!!
 
 
 
@@ -10,14 +10,14 @@ var co = require('co'); //!!!
 module.exports.add = function* add(next) {
     if ('PUT' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
 
 
 
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(405, "Error, request body is empty");
         if (!body.requestTypeId) this.throw(405, "Error, no request typeId in the request body");
 
@@ -38,14 +38,14 @@ module.exports.add = function* add(next) {
                     text: 'Not enough parameters in the request body' //no account type given
                 }));
 
-                var randomAccNum = 'AE';
-                var allowedChars = '1234567890';
-                var allowedCharsNum = allowedChars.length;
-                for (var i = 0; i < 20; i++) {
+                let randomAccNum = 'AE';
+                let allowedChars = '1234567890';
+                let allowedCharsNum = allowedChars.length;
+                for (let i = 0; i < 20; i++) {
                     randomAccNum += allowedChars[parseInt(Math.random() * allowedCharsNum)];
                 }
 
-                var tempAcc = {
+                let tempAcc = {
                     "userId": this.request.scrap.userId, //userId of the user submitting the request
                     "id": GLOBAL.GetRandomSTR(12),
                     "name": body.name || body.typeName,
@@ -69,7 +69,7 @@ module.exports.add = function* add(next) {
                         "arrears": 0
                     }
                 }
-                var inserted = yield this.app.db.accounts.insert(tempAcc);
+                let inserted = yield this.app.db.accounts.insert(tempAcc);
                 console.log('added the new account');
                 if (!inserted || inserted < 1) {
                     this.throw(405, "Error: Account could not be added.");

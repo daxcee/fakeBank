@@ -9,34 +9,34 @@ console.log('Generating fake transactions');
 
 
 
-var accountId = process.argv[2];
-var monthShift = process.argv[3] || 0;
+let accountId = process.argv[2];
+let monthShift = process.argv[3] || 0;
 if (!accountId) throw 'no account given. Specify accountId as a command line parameter'; //TODO: break if no account given
 
-var fs = require('fs');
-var templates = JSON.parse(fs.readFileSync(accountId + '_templates.json', 'utf8'));
+let fs = require('fs');
+let templates = JSON.parse(fs.readFileSync(accountId + '_templates.json', 'utf8'));
 
-var TempDate = new Date();
+let TempDate = new Date();
 
-var Year = (TempDate).getFullYear();
-var Month = (TempDate).getMonth() + monthShift;
-var daysInMonth = getDaysInMonth(Month + 1, Year);
+let Year = (TempDate).getFullYear();
+let Month = (TempDate).getMonth() + monthShift;
+let daysInMonth = getDaysInMonth(Month + 1, Year);
 
-var tempArray = [];
-var counter = 0;
+let tempArray = [];
+let counter = 0;
 console.log(templates.length, 'templates loaded');
-for (var i = 0; i < templates.length; i++) {
-	var temp = templates[i];
+for (let i = 0; i < templates.length; i++) {
+	let temp = templates[i];
 
-	for (var ee = 0; ee < temp.nPerMonth; ee++) {
+	for (let ee = 0; ee < temp.nPerMonth; ee++) {
 		if (temp.probability > Math.random()) {
-			var tempRecord = {};
+			let tempRecord = {};
 			tempRecord.accountId = accountId;
 			tempRecord.amount = Math.random() * (temp.amountMax - temp.amountMin) + temp.amountMin;
 			if (temp.integer) tempRecord.amount = Math.floor(tempRecord.amount);
 			tempRecord.amount = parseFloat(tempRecord.amount.toFixed(2));
 			tempRecord.currency = temp.currency;
-			var dayOfMonth = Math.floor(1 + (daysInMonth - 1) * Math.random());
+			let dayOfMonth = Math.floor(1 + (daysInMonth - 1) * Math.random());
 			tempRecord.narrative = temp.narrative;
 			tempRecord.txnType = temp.txnType;
 			tempRecord.type = temp.type;
@@ -71,7 +71,7 @@ for (i = 0; i < tempArray.length; i++) {
 
 //console.log(Resp);
 
-var Datastore = require('nedb'),
+let Datastore = require('nedb'),
 	db = new Datastore({
 		filename: 'db_future',
 		autoload: true
@@ -97,7 +97,7 @@ function getDaysInMonth(month, year) {
 
 
 function GetRandomSTR(GivenLength) {
-	var resp = "";
+	let resp = "";
 	while (resp.length < GivenLength) {
 		resp += Math.random().toString(36).substr(2, GivenLength);
 	}

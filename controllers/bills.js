@@ -55,7 +55,46 @@ module.exports.unpaid = function* unpaid(next) {
 	this.body = yield allbills;
 };
 
+//GET /bills/history/:dateStart/:dateEnd -> List of transactions
+module.exports.history = function* history(dateStart, dateEnd, next) {
 
+	dateStart = new Date(parseInt(dateStart)); //TODO: potentially problematic, redo
+	dateEnd = new Date(parseInt(dateEnd));
+	dateStart = dateStart || (new Date()).addMinutes(60 * 24 * 30);
+	dateEnd = dateEnd || (new Date());
+	dateStart = (new Date()).addMinutes(-60 * 24 * 30);
+	dateEnd = (new Date());
+
+	let allaccounts = yield this.app.db.accounts.find({
+		"userId": this.request.scrap.userId
+	}).sort({
+		isMain: -1,
+		DTSOpened: 1
+	}).exec();
+
+	let transactions = [];
+	let temp = [];
+
+	for (let acc of allaccounts) {
+
+		temp = yield this.app.db.transactions.find({
+			"txnType": 30, //!!!??? hardcoded
+			"accountId": acc.id,
+			DTSValue: {
+				$gt: dateStart,
+				$lt: dateEnd
+			}
+		}).exec();
+		for (let tran of temp)
+			transactions.push(tran);
+
+	}
+
+	//TODO: sort the transactions
+
+
+	this.body = yield transactions;
+};
 
 
 
@@ -67,7 +106,7 @@ module.exports.pay = function* pay(id, next) {
 	resp.success = false;
 	try {
 		let body = yield parse.json(this);
-		if (!body || ((body.srcAcc) && (body.status !== "on") && (body.status !== "off"))) this.throw(405, "Error, srcAcc missing or has a wrong value");
+		if (!body || !body.srcAcc) this.throw(405, "Error, srcAcc missing or has a wrong value");
 
 
 		let srcAccount = yield this.app.db.accounts.findOne({
@@ -89,7 +128,8 @@ module.exports.pay = function* pay(id, next) {
 
 		if (bill.isPaid) this.throw(405, 'Error: bill is already paid');
 		if (bill.isExpired) this.throw(405, 'Error: bill is already expired');
-		if (bill.DTSExpiry && ((new Date(bill.DTSExpiry)) > (new Date()))) this.throw(405, 'Error: bill has  expired');
+		if (bill.DTSExpiry && ((new Date(bill.DTSExpiry)) < (new Date()))) this.throw(405, 'Error: bill has  expired');
+
 
 		let amount = bill.amount;
 		let currency = bill.currency;
@@ -99,6 +139,9 @@ module.exports.pay = function* pay(id, next) {
 			srcAccount.balance.currency,
 			amount,
 			currency); //convert transaction currency into the currency of the account
+
+
+		toBeDebitedAmount = parseFloat(toBeDebitedAmount);
 
 		if (srcAccount.balance.native < toBeDebitedAmount) this.throw(405, 'Error: not enough money on the source account');
 
@@ -114,11 +157,18 @@ module.exports.pay = function* pay(id, next) {
 		if (numChanged < 1) this.throw(405, "Error, could not change source account");
 
 
+		bill.isPaid = true;
+		bill.status = 'paid';
+		bill.isActive = false;
+		bill.DTSPaid = new Date();
+		bill.transactionId = GLOBAL.GetRandomSTR(12);
+
+
+
 		//now add the transaction info
-		let transactionId = GLOBAL.GetRandomSTR(12);
 		let transaction = {
-			"accountId": srcAccount.sourceAccount.id,
-			"transactionId": transactionId,
+			"accountId": srcAccount.id,
+			"transactionId": bill.transactionId,
 			"txnType": 30, //!!! hardcoded
 			"typeName": 'Utility payment', //!!! hardcoded
 			"narrative": body.narrative || "Bill payment " + (bill.providerName || "") + " " + (bill.shortDescription || ""),
@@ -131,21 +181,20 @@ module.exports.pay = function* pay(id, next) {
 			"stateId": "100", //### hardcoded transaction state ID
 			"transactionState": "RECONCILED", //### hardcoded transaction state
 			"reference": GLOBAL.GetRandomSTR(15),
-			"labels": body.labels || ['bill payment']
+			"labels": body.labels || ['bill payment'],
+			"bill": bill
 		};
 		numChanged = yield this.app.db.transactions.insert(transaction);
 
 
 		//now mark the bill paid
-		bill.isPaid = true;
-		bill.DTSPaid = new Date();
-		bill.transactionId = transactionId;
-
 		numChanged = yield this.app.db.bills.update({
-			"id": id
+			"billId": bill.billId
 		}, bill, {});
 		console.log('Bill paid successfully');
 		resp.success = true;
+		resp.transaction = transaction;
+
 		resp.text = 'Bill has been paid';
 		this.body = JSON.stringify(resp);
 	} catch (e) {

@@ -1,6 +1,6 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
 
 
@@ -9,11 +9,11 @@ require('../utils.js');
 //{"userName": "myuserid", "password": "mysecretpassword", "channel":"web"}
 module.exports.login = function* login(next) {
     if ('POST' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
     resp.success = false;
     resp.text = 'Strange';
 
-    var body = yield parse.json(this);
+    let body = yield parse.json(this);
     if (!body) this.throw(404, JSON.stringify({
         error: true,
         text: 'No body'
@@ -29,7 +29,7 @@ module.exports.login = function* login(next) {
     body.channel = body.channel || "web";
 
     //find the user
-    var user = yield this.app.db.users.findOne({
+    let user = yield this.app.db.users.findOne({
         "userName": body.userName,
         "password": body.password
     }).exec();
@@ -41,8 +41,8 @@ module.exports.login = function* login(next) {
     } else {
         console.log('got user');
         //username and password are correct
-        var newTokenObj = {};
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        let newTokenObj = {};
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 newTokenObj[property] = body[property];
             }
@@ -52,7 +52,7 @@ module.exports.login = function* login(next) {
         newTokenObj.userId = user.userId;
         newTokenObj.chanel = body.channel;
 
-        var numChanged = yield this.app.db.tokens.update({
+        let numChanged = yield this.app.db.tokens.update({
             "userId": newTokenObj.userId,
             "channel": newTokenObj.chanel
         }, newTokenObj, {

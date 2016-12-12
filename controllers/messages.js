@@ -1,6 +1,6 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
 
 
@@ -10,11 +10,11 @@ module.exports.all = function* list(next) {
 
 
     //find cards which correspond to the userId
-    var msgsFromUser = yield this.app.db.messages.find({
+    let msgsFromUser = yield this.app.db.messages.find({
         "authorUserId": this.request.scrap.userId
     }).exec();
 
-    var msgsToUser = yield this.app.db.messages.find({
+    let msgsToUser = yield this.app.db.messages.find({
         "recepientUserId": this.request.scrap.userId
     }).exec();
 
@@ -26,25 +26,25 @@ module.exports.all = function* list(next) {
 module.exports.add = function* add(data, next) {
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.text) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
         }));
 
-        var user = yield this.app.db.userDetails.findOne({
+        let user = yield this.app.db.userDetails.findOne({
             "userId": this.request.scrap.userId
         }).exec();
 
         if (!user || user.userId !== this.request.scrap.userId) this.throw(405, "Error: can not find the user." + this.request.scrap.userId);
 
-        var tempMsg = {};
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        let tempMsg = {};
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 tempMsg[property] = body[property];
             }
@@ -55,10 +55,10 @@ module.exports.add = function* add(data, next) {
         tempMsg.authorUserId = user.userId;
         tempMsg.isSent = true;
         tempMsg.id = GLOBAL.GetRandomSTR(12);
-        var tempId = tempMsg.tempId;
+        let tempId = tempMsg.tempId;
         tempMsg.tempId = undefined;
 
-        var inserted = yield this.app.db.messages.insert(tempMsg);
+        let inserted = yield this.app.db.messages.insert(tempMsg);
         if (!inserted) {
             this.throw(405, "Error: Failed adding the new message.");
         }
@@ -82,16 +82,16 @@ module.exports.add = function* add(data, next) {
 module.exports.modify = function* modify(id, next) {
     if ('POST' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
         }));
 
-        var msg = yield this.app.db.messages.findOne({
+        let msg = yield this.app.db.messages.findOne({
             "id": id,
             "recepientUserId": this.request.scrap.userId
         }).exec();
@@ -104,7 +104,7 @@ module.exports.modify = function* modify(id, next) {
         msg.isRead = msg.isRead || body.isRead;
         msg.isSent = msg.isSent || body.isSent;
 
-        var numChanged = yield this.app.db.messages.update({
+        let numChanged = yield this.app.db.messages.update({
             "id": id,
             "recepientUserId": this.request.scrap.userId
         }, msg, {});

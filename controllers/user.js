@@ -1,13 +1,13 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
 
 
 
 
 function* fetchAccounts(givenUserId) {
-    var resp = {};
+    let resp = {};
     resp = yield db.accounts.find({
         "userId": givenUserId
     }).exec();
@@ -21,7 +21,7 @@ function* fetchAccounts(givenUserId) {
 module.exports.fetch = function* fetch(id, next) {
     if ('GET' != this.method) return yield next;
 
-    var user = yield this.app.db.userDetails.findOne({
+    let user = yield this.app.db.userDetails.findOne({
         "userId": this.request.scrap.userId
     }).exec();
 
@@ -38,30 +38,30 @@ module.exports.add = function* add(data, next) {
     //adds a new user
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.name || !body.userName || !body.password) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
         }));
 
-        var tempUser = {};
+        let tempUser = {};
 
         tempUser.userName = body.userName;
         tempUser.userId = GLOBAL.GetRandomSTR(12);
         tempUser.password = body.password;
 
-        var inserted = yield this.app.db.users.insert(tempUser);
+        let inserted = yield this.app.db.users.insert(tempUser);
         console.log('added the new user');
         if (!inserted || inserted < 1) {
             this.throw(405, "Error: User could not be added.");
         }
 
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 tempUser[property] = body[property];
             }
@@ -75,7 +75,7 @@ module.exports.add = function* add(data, next) {
         tempUser.mobile = body.mobile || "";
 
 
-        var inserted = yield this.app.db.userDetails.insert(tempUser);
+        inserted = yield this.app.db.userDetails.insert(tempUser);
         console.log('added the new user details');
         if (!inserted || inserted < 1) {
             this.throw(405, "Error: Failed registering user details.");
@@ -96,11 +96,11 @@ module.exports.add = function* add(data, next) {
 module.exports.modify = function* modify(id, next) {
     if ('POST' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
         //find user which correspond to the userId
-        var user = yield this.app.db.userDetails.findOne({
+        let user = yield this.app.db.userDetails.findOne({
             "userId": this.request.scrap.userId
         }).exec();
 
@@ -109,15 +109,15 @@ module.exports.modify = function* modify(id, next) {
             text: 'User not found'
         }));
 
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(405, "Error, request body is empty");
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 user[property] = body[property];
             }
         }
 
-        var numChanged = yield this.app.db.userDetails.update({
+        let numChanged = yield this.app.db.userDetails.update({
             "userId": id
         }, user, {});
 
@@ -138,11 +138,11 @@ module.exports.modify = function* modify(id, next) {
 //requires currentPassword and newPassword in the request body
 module.exports.passwordChange = function* passwordChange(id, next) {
     if ('POST' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
         //find user which correspond to the userId
-        var user = yield this.app.db.users.findOne({
+        let user = yield this.app.db.users.findOne({
             "userId": this.request.scrap.userId
         }).exec();
 
@@ -151,12 +151,12 @@ module.exports.passwordChange = function* passwordChange(id, next) {
             text: 'User not found'
         }));
 
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.currentPassword || !body.newPassword) this.throw(405, "Error, request body is empty");
 
         if (user.password!==!body.currentPassword) this.throw(405, "Error, wrong password");
         user.password = body.newPassword;
-        var numChanged = yield this.app.db.users.update({
+        let numChanged = yield this.app.db.users.update({
             "userId": id
         }, user, {});
 

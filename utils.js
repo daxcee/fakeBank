@@ -1,5 +1,5 @@
 function isDate(givenDate) {
-    var d = Date.parse(givenDate);
+    let d = Date.parse(givenDate);
     //returns true if given a date
     if (Object.prototype.toString.call(givenDate) === "[object Date]") {
         // it is a date
@@ -24,7 +24,7 @@ function isArray(givenArray) {
 }
 
 GLOBAL.GetRandomSTR = function (GivenLength) {
-    var resp = "";
+    let resp = "";
     while (resp.length < GivenLength) {
         resp += Math.random().toString(36).substr(2, GivenLength);
     }
@@ -33,10 +33,10 @@ GLOBAL.GetRandomSTR = function (GivenLength) {
 
 
 GLOBAL.GetRandomNumbers = function (GivenLength) {
-    var resp = '',
+    let resp = '',
         allowedChars = '1234567890',
         allowedCharsNum = allowedChars.length;
-    for (var i = 0; i < GivenLength; i++) {
+    for (let i = 0; i < GivenLength; i++) {
         resp += allowedChars[parseInt(Math.random() * allowedCharsNum)];
     }
     return resp;
@@ -44,7 +44,7 @@ GLOBAL.GetRandomNumbers = function (GivenLength) {
 
 
 GLOBAL.isDate = function (givenDate) {
-    var d = Date.parse(givenDate);
+    let d = Date.parse(givenDate);
     //returns true if given a date
     if (Object.prototype.toString.call(givenDate) === "[object Date]") {
         // it is a date

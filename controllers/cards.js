@@ -1,6 +1,6 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
 
 
@@ -11,7 +11,7 @@ module.exports.all = function* list(next) {
     //this.request.scrap.userId should have the user id which corresponds to the token 
 
     //find cards which correspond to the userId
-    var cards = yield this.app.db.cards.find({
+    let cards = yield this.app.db.cards.find({
         "userId": this.request.scrap.userId
     }).exec();
 
@@ -25,7 +25,7 @@ module.exports.fetch = function* fetch(id, next) {
     if ('GET' != this.method) return yield next;
     //find accounts which correspond to the userId
 
-    var card = yield this.app.db.cards.findOne({
+    let card = yield this.app.db.cards.findOne({
         "userId": this.request.scrap.userId,
         "id": id
     }).exec();
@@ -42,23 +42,23 @@ module.exports.add = function* add(data, next) {
     //adds a new card 
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.type) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
         }));
 
-        var accounts = yield this.app.db.accounts.find({
+        let accounts = yield this.app.db.accounts.find({
             "userId": this.request.scrap.userId
         }).exec();
 
 
-        var tempCard = {
+        let tempCard = {
             "userId": body.userId || this.request.scrap.userId,
             "id": GLOBAL.GetRandomSTR(12),
             "name": body.name || body.type,
@@ -73,7 +73,7 @@ module.exports.add = function* add(data, next) {
                 "id": accounts[0].id
             }]
         }
-        var inserted = yield this.app.db.cards.insert(tempCard);
+        let inserted = yield this.app.db.cards.insert(tempCard);
         if (!inserted) {
             this.throw(405, "Error: Card could not be added.");
         }
@@ -95,11 +95,11 @@ module.exports.add = function* add(data, next) {
 module.exports.modify = function* modify(id, next) {
     if ('POST' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
         //find cards which correspond to the userId
-        var card = yield this.app.db.cards.findOne({
+        let card = yield this.app.db.cards.findOne({
             "userId": this.request.scrap.userId,
             "id": id
         }).exec();
@@ -109,12 +109,12 @@ module.exports.modify = function* modify(id, next) {
             text: 'Card not found'
         }));
 
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(405, "Error, request body is empty");
         card.name = body.name || card.name;
         card.accountsLinked = body.accountsLinked || card.accountsLinked;
 
-        var numChanged = yield this.app.db.cards.update({
+        let numChanged = yield this.app.db.cards.update({
             "id": id
         }, card, {});
 
@@ -135,11 +135,11 @@ module.exports.modify = function* modify(id, next) {
 
 module.exports.onoff = function* onoff(id, onoff, next) {
     if ('POST' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
 
-        var card = yield this.app.db.cards.findOne({
+        let card = yield this.app.db.cards.findOne({
             "userId": this.request.scrap.userId,
             "id": id
         }).exec();
@@ -157,7 +157,7 @@ module.exports.onoff = function* onoff(id, onoff, next) {
             card.status = 'active';
             card.isActive = true;
         }
-        var numChanged = yield this.app.db.cards.update({
+        let numChanged = yield this.app.db.cards.update({
             "id": id
         }, card, {});
 

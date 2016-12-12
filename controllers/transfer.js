@@ -1,5 +1,5 @@
 'use strict';
-var parse = require('co-body');
+let parse = require('co-body');
 
 require('../utils.js');
 
@@ -9,16 +9,16 @@ require('../utils.js');
 module.exports.acc2acc = function* acc2acc(next) {
 	if ('POST' != this.method) return yield next;
 
-	var resp = {};
+	let resp = {};
 	resp.success = false;
 	try {
 
-		var accounts = yield this.app.db.accounts.find({
+		let accounts = yield this.app.db.accounts.find({
 			"userId": this.request.scrap.userId
 		}).exec();
 
-		var transaction = {};
-		var body = yield parse.json(this);
+		let transaction = {};
+		let body = yield parse.json(this);
 		if (!body) this.throw(405, "Error, request body is empty");
 		if (!body.srcAcc || !body.dstAcc) this.throw(405, "Error, source or destination account ids missing");
 		if (!body.amount || !body.amount < 0) this.throw(405, "Error, amount is missing");
@@ -27,7 +27,7 @@ module.exports.acc2acc = function* acc2acc(next) {
 		transaction.currency = body.currency;
 
 
-		for (var i in accounts) {
+		for (let i in accounts) {
 			console.log(accounts[i].id, body.srcAcc);
 			if (accounts[i].id === body.srcAcc) {
 				transaction.sourceAccount = accounts[i];
@@ -38,7 +38,7 @@ module.exports.acc2acc = function* acc2acc(next) {
 		}
 		if (!transaction.sourceAccount || !transaction.destinationAccount) this.throw(405, "Error, source or destination account ids are wrong");
 
-		for (var i in accounts) {
+		for (let i in accounts) {
 			if (accounts[i].id === transaction.sourceAccount.id) {
 				console.log('source was', transaction.sourceAccount.balance.native);
 
@@ -64,7 +64,7 @@ module.exports.acc2acc = function* acc2acc(next) {
 
 
 
-		var numChanged = yield this.app.db.accounts.update({
+		let numChanged = yield this.app.db.accounts.update({
 			"userId": this.request.scrap.userId,
 			"id": transaction.sourceAccount.id
 		}, transaction.sourceAccount, {});
@@ -76,7 +76,7 @@ module.exports.acc2acc = function* acc2acc(next) {
 		}, transaction.destinationAccount, {});
 		if (numChanged < 1) this.throw(405, "Error, could not change destination account");
 
-		var tempTran;
+		let tempTran;
 		transaction.id = GLOBAL.GetRandomSTR(12);
 		transaction.txnType = '1'; //### hardcoded acc2acc transfer transaction type id
 		transaction.typeName = 'Funds transfer'; //### hardcoded acc2acc transfer transaction type name
@@ -141,12 +141,12 @@ module.exports.acc2acc = function* acc2acc(next) {
 module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 	if ('POST' != this.method) return yield next;
 
-	var resp = {};
+	let resp = {};
 	resp.success = false;
 	try {
-		var transaction = {};
-		var tempTran; //temp transaction record which will be written to db_transactions table
-		var body = yield parse.json(this);
+		let transaction = {};
+		let tempTran; //temp transaction record which will be written to db_transactions table
+		let body = yield parse.json(this);
 		if (!body) this.throw(405, "Error, request body is empty");
 		if (!body.amount || !body.amount < 0) this.throw(405, "Error, amount is missing");
 		transaction.amount = parseFloat(body.amount);
@@ -179,7 +179,7 @@ module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 
 		console.log('going to debit', transaction.sourceAccount.num);
 
-		var tempOldBalance = transaction.sourceAccount.balance.native;
+		let tempOldBalance = transaction.sourceAccount.balance.native;
 
 
 		transaction.amountInSourceCurrency = GLOBAL.fxrates.convertCurrency(
@@ -205,7 +205,7 @@ module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 
 
 
-		var sender = yield this.app.db.userDetails.findOne({
+		let sender = yield this.app.db.userDetails.findOne({
 			"userId": this.request.scrap.userId
 		}).exec();
 
@@ -229,7 +229,7 @@ module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 
 				if (!transaction.destinationAccount || !transaction.destinationAccount.id) this.throw(405, "Error, destination account id is wrong");
 
-				var tempOldBalance = transaction.sourceAccount.balance.native;
+				let tempOldBalance = transaction.sourceAccount.balance.native;
 
 
 				transaction.amountInDestinationCurrency = GLOBAL.fxrates.convertCurrency(
@@ -253,13 +253,13 @@ module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 					transaction.destinationAccount.balance.native,
 					transaction.destinationAccount.balance.currency);
 
-				var numChanged = yield this.app.db.accounts.update({
+				let numChanged = yield this.app.db.accounts.update({
 					"id": transaction.destinationAccount.id
 				}, transaction.destinationAccount, {});
 				if (numChanged < 1) this.throw(405, "Error, could not credit destination account");
 
 				//console.log('receiver user id', transaction.destinationAccount.userId);
-				var receiver = yield this.app.db.userDetails.findOne({
+				let receiver = yield this.app.db.userDetails.findOne({
 					"userId": transaction.destinationAccount.userId
 				}).exec();
 				//
@@ -336,7 +336,7 @@ module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 		}
 
 		//now write the new balance of the source account, debit side
-		var numChanged = yield this.app.db.accounts.update({
+		let numChanged = yield this.app.db.accounts.update({
 			"userId": this.request.scrap.userId,
 			"id": transaction.sourceAccount.id
 		}, transaction.sourceAccount, {});
@@ -378,16 +378,16 @@ module.exports.acc2ben = function* acc2ben(beneficiaryId, next) {
 module.exports.card2acc = function* card2acc(next) {
 	if ('POST' != this.method) return yield next;
 
-	var resp = {};
+	let resp = {};
 	resp.success = false;
 	try {
 
-		var accounts = yield this.app.db.accounts.find({
+		let accounts = yield this.app.db.accounts.find({
 			"userId": this.request.scrap.userId
 		}).exec();
 
-		var transaction = {};
-		var body = yield parse.json(this);
+		let transaction = {};
+		let body = yield parse.json(this);
 		if (!body) this.throw(405, "Error, request body is empty");
 		if (!body.dstAcc) this.throw(405, "Error, destination account id is missing");
 		if (!body.amount || !body.amount < 0) this.throw(405, "Error, amount is missing");
@@ -396,14 +396,14 @@ module.exports.card2acc = function* card2acc(next) {
 		transaction.currency = body.currency;
 
 
-		for (var i in accounts) {
+		for (let i in accounts) {
 			if (accounts[i].id === body.dstAcc) {
 				transaction.destinationAccount = accounts[i];
 			}
 		}
 		if (!transaction.destinationAccount) this.throw(405, "Error, source or destination account ids are wrong");
 
-		var otherCard = {};
+		let otherCard = {};
 		if (!body.cardnumber) this.throw(405, "Error, source card number is missing");
 		if (!body.expiryMonth || !body.expiryYear) this.throw(405, "Error, source card expiry date is missing");
 		if (!body.cvv) this.throw(405, "Error, source card cvv is missing");
@@ -415,7 +415,7 @@ module.exports.card2acc = function* card2acc(next) {
 		otherCard.nameoncard = body.nameoncard;
 		console.log('Simulating cash transaction on a network card', otherCard);
 
-		for (var i in accounts) {
+		for (let i in accounts) {
 			if (accounts[i].id === transaction.destinationAccount.id) {
 				console.log('destination was', transaction.destinationAccount.balance.native);
 				transaction.amountInDestinationCurrency = GLOBAL.fxrates.convertCurrency(
@@ -428,14 +428,14 @@ module.exports.card2acc = function* card2acc(next) {
 			}
 		}
 
-		var numChanged = yield this.app.db.accounts.update({
+		let numChanged = yield this.app.db.accounts.update({
 			"userId": this.request.scrap.userId,
 			"id": transaction.destinationAccount.id
 		}, transaction.destinationAccount, {});
 		if (numChanged < 1) this.throw(405, "Error, could not change destination account");
 
 		otherCard.maskedNumber = otherCard.cardnumber[0] + '...' + otherCard.cardnumber.slice(-4);
-		var tempTran;
+		let tempTran;
 		transaction.id = GLOBAL.GetRandomSTR(12);
 		transaction.txnType = '200'; //### hardcoded
 		transaction.typeName = 'Account topup from other card'; //??? hardcoded

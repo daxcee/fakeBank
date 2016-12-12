@@ -1,6 +1,6 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 
 require('../utils.js');
 
@@ -14,9 +14,9 @@ module.exports.all = function* list(next) {
     if ('GET' != this.method) return yield next;
 
     //this.request.scrap.userId should have the user id which corresponds to the token 
-    console.log("userId", this.request.scrap.userId);
+    //console.log("userId", this.request.scrap.userId);
     //find accounts which correspond to the userId
-    var allaccounts = yield this.app.db.accounts.find({
+    let allaccounts = yield this.app.db.accounts.find({
         "userId": this.request.scrap.userId
     }).sort({
         isMain: -1,
@@ -33,7 +33,7 @@ module.exports.all = function* list(next) {
 module.exports.fetch = function* fetch(id, next) {
     if ('GET' != this.method) return yield next;
     //find accounts which correspond to the userId
-    var account = yield this.app.db.accounts.findOne({
+    let account = yield this.app.db.accounts.findOne({
         "userId": this.request.scrap.userId,
         "id": id
     }).exec();
@@ -51,12 +51,12 @@ module.exports.add = function* add(data, next) {
     //adds a new account 
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.type) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
@@ -64,14 +64,14 @@ module.exports.add = function* add(data, next) {
         body.balance = body.balance || {};
 
         //generates a string of random numbers (something which would look like an account number)
-        var randomAccNum = 'AE';
-        var allowedChars = '1234567890';
-        var allowedCharsNum = allowedChars.length;
-        for (var i = 0; i < 20; i++) {
+        let randomAccNum = 'AE';
+        let allowedChars = '1234567890';
+        let allowedCharsNum = allowedChars.length;
+        for (let i = 0; i < 20; i++) {
             randomAccNum += allowedChars[parseInt(Math.random() * allowedCharsNum)];
         }
 
-        var tempAcc = {
+        let tempAcc = {
             "userId": body.userId || this.request.scrap.userId,
             "id": GLOBAL.GetRandomSTR(12),
             "name": body.name || body.type,
@@ -95,7 +95,7 @@ module.exports.add = function* add(data, next) {
                 "arrears": body.balance.arrears || 0
             }
         }
-        var inserted = yield this.app.db.accounts.insert(tempAcc);
+        let inserted = yield this.app.db.accounts.insert(tempAcc);
         console.log('added the new account');
         if (!inserted || inserted < 1) {
             this.throw(405, "Error: Account could not be added.");
@@ -117,14 +117,14 @@ module.exports.add = function* add(data, next) {
 module.exports.close = function* close(id, next) {
     if ('DELETE' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(405, "Error, request body is empty");
 
         //make sure source account does exist.
-        var srcAccount = yield this.app.db.accounts.findOne({
+        let srcAccount = yield this.app.db.accounts.findOne({
             "userId": this.request.scrap.userId,
             "id": id
         }).exec();
@@ -140,7 +140,7 @@ module.exports.close = function* close(id, next) {
 
 
         if (!body.dstAcc) {
-            var mainAccount = yield this.app.db.accounts.findOne({
+            let mainAccount = yield this.app.db.accounts.findOne({
                 "userId": this.request.scrap.userId,
                 "isMain": true
             }).exec();
@@ -149,7 +149,7 @@ module.exports.close = function* close(id, next) {
 
         //if account balance is positive, try to transfer it.
         if (body.dstAcc && srcAccount.balance.native > 0) {
-            var dstAccount = yield this.app.db.accounts.findOne({
+            let dstAccount = yield this.app.db.accounts.findOne({
                 "userId": this.request.scrap.userId,
                 "id": body.dstAcc
             }).exec();
@@ -158,11 +158,11 @@ module.exports.close = function* close(id, next) {
                 text: "Error: can't find the destination account"
             }));
 
-            var toBeTransferedAmount = srcAccount.balance.native;
-            var toBeTransferedCurrency = srcAccount.balance.currency;
-            var toBeCreditedCurrency = dstAccount.balance.currency;
+            let toBeTransferedAmount = srcAccount.balance.native;
+            let toBeTransferedCurrency = srcAccount.balance.currency;
+            let toBeCreditedCurrency = dstAccount.balance.currency;
 
-            var toBeCreditedAmount = GLOBAL.fxrates.convertCurrency(
+            let toBeCreditedAmount = GLOBAL.fxrates.convertCurrency(
                 toBeCreditedCurrency,
                 toBeTransferedAmount,
                 toBeTransferedCurrency); //convert transaction currency into the currency of the account
@@ -172,7 +172,7 @@ module.exports.close = function* close(id, next) {
 
             //post the new balance
 
-            var numChanged = yield this.app.db.accounts.update({
+            let numChanged = yield this.app.db.accounts.update({
                 "id": dstAccount.id
             }, dstAccount, {});
             if (!numChanged || numChanged !== 1) this.throw(404, JSON.stringify({
@@ -181,7 +181,7 @@ module.exports.close = function* close(id, next) {
             }));
 
             srcAccount.name = srcAccount.name || "";
-            var tempTran = {
+            let tempTran = {
                 "accountId": dstAccount.id,
                 "transactionId": GLOBAL.GetRandomSTR(12),
                 "txnType": '0', //???### hardcoded internal maintenance tranasction
@@ -198,7 +198,7 @@ module.exports.close = function* close(id, next) {
                 "reference": GLOBAL.GetRandomSTR(15),
                 "labels": body.labels || []
             };
-            var inserted = yield this.app.db.transactions.insert(tempTran);
+            let inserted = yield this.app.db.transactions.insert(tempTran);
             console.log('added the new transaction');
             if (!inserted || inserted < 1) {
                 this.throw(405, "Error: Failed adding new transaction.");
@@ -206,7 +206,7 @@ module.exports.close = function* close(id, next) {
 
         }
 
-        var numRemoved = yield this.app.db.accounts.remove({
+        let numRemoved = yield this.app.db.accounts.remove({
             "id": id
         }, {});
         if (!numRemoved || numRemoved !== 1) this.throw(404, JSON.stringify({
@@ -233,14 +233,14 @@ module.exports.close = function* close(id, next) {
 module.exports.modify = function* modify(id, next) {
     if ('POST' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || ((body.status) && (body.status !== "on") && (body.status !== "off"))) this.throw(405, "Error, status parameter missing or has wrong value");
 
 
-        var account = yield this.app.db.accounts.findOne({
+        let account = yield this.app.db.accounts.findOne({
             "userId": this.request.scrap.userId,
             "id": id
         }).exec();
@@ -255,7 +255,7 @@ module.exports.modify = function* modify(id, next) {
         if (body.name) account.name = body.name; //TODO: sanitize input
         if (body.isMain === true || body.isMain === false) account.isMain = body.isMain;
 
-        var numChanged = yield this.app.db.accounts.update({
+        let numChanged = yield this.app.db.accounts.update({
             "id": id
         }, account, {});
         console.log('modified details of account', id);
@@ -279,7 +279,7 @@ module.exports.transactions = function* fetch(id, dateStart, dateEnd, next) {
     if (!isDate(dateStart)) this.throw(405, "Error start date.");
     if (!isDate(dateEnd)) this.throw(405, "Error end date.");
 
-    var transactions = [];
+    let transactions = [];
     transactions = yield this.app.db.transactions.find({
         "accountId": id,
         DTSValue: {
@@ -297,18 +297,18 @@ module.exports.transactionModify = function* fetch(id, next) {
 
     //takes a labels array from request body, adds it into transaction details
     if ('POST' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body || !body.labels || !isArray(body.labels)) this.throw(405, "Error: Not enough parameters in the request body.");
 
-        var transaction = yield this.app.db.transactions.findOne({
+        let transaction = yield this.app.db.transactions.findOne({
             "transactionId": id
         }).exec();
         if (!transaction) this.throw(405, "Error: Can not find the transaction.");
         transaction.labels = body.labels;
-        var numChanged = yield this.app.db.transactions.update({
+        let numChanged = yield this.app.db.transactions.update({
             "transactionId": id
         }, transaction, {});
 
@@ -330,17 +330,17 @@ module.exports.transactionAdd = function* add(id, next) {
     //adds a new transaction. Use only to import transactions generated outside. 
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
 
     try {
         //fetch all the accounts first
-        var accounts = yield fetchAccounts(this.request.scrap.userId);
+        let accounts = yield fetchAccounts(this.request.scrap.userId);
 
         //check if such account does exist
-        var account = yield this.app.db.accounts.findOne({
+        let account = yield this.app.db.accounts.findOne({
             "userId": this.request.scrap.userId,
             "id": id
         }).exec();
@@ -350,13 +350,13 @@ module.exports.transactionAdd = function* add(id, next) {
             text: "Error: can't find the account"
         }));
 
-        var body = yield parse.json(this); //parse request body
+        let body = yield parse.json(this); //parse request body
         if (!body || !body.txnType || !body.amount) this.throw(404, JSON.stringify({
             error: true,
             text: 'Not enough parameters in the request body'
         }));
 
-        var tempTran = {
+        let tempTran = {
             "accountId": id,
             "transactionId": GLOBAL.GetRandomSTR(12),
             "txnType": body.txnType,
@@ -373,7 +373,7 @@ module.exports.transactionAdd = function* add(id, next) {
             "reference": body.reference || GLOBAL.GetRandomSTR(15),
             "labels": body.labels || []
         };
-        var inserted = yield this.app.db.transactions.insert(tempTran);
+        let inserted = yield this.app.db.transactions.insert(tempTran);
         console.log('added the new transaction', body.txnType);
         if (!inserted || inserted < 1) {
             this.throw(405, "Error: Account could not be added.");

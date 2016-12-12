@@ -1,6 +1,6 @@
 'use strict';
-var parse = require('co-body');
-//var co = require('co');
+let parse = require('co-body');
+//let co = require('co');
 require('../utils.js');
 
 
@@ -11,7 +11,7 @@ module.exports.all = function* list(next) {
     //this.request.scrap.userId should have the user id which corresponds to the token 
 
     //find accounts which correspond to the userId
-    var beneficiaries = yield this.app.db.beneficiaries.find({
+    let beneficiaries = yield this.app.db.beneficiaries.find({
         "userId": this.request.scrap.userId
     }).exec();
 
@@ -24,7 +24,7 @@ module.exports.all = function* list(next) {
 module.exports.fetch = function* fetch(id, next) {
     if ('GET' != this.method) return yield next;
 
-    var beneficiary = yield this.app.db.beneficiaries.findOne({
+    let beneficiary = yield this.app.db.beneficiaries.findOne({
         "userId": this.request.scrap.userId,
         "beneficiaryId": id
     }).exec();
@@ -42,12 +42,12 @@ module.exports.add = function* add(data, next) {
     //adds a new beneficiary 
     if ('PUT' != this.method) return yield next;
 
-    var resp = {
+    let resp = {
         success: false
     };
 
     try {
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(404, JSON.stringify({
             error: true,
             text: 'No body'
@@ -61,20 +61,20 @@ module.exports.add = function* add(data, next) {
             text: 'Not enough parameters in the request body'
         }));
 
-        var account = yield this.app.db.accounts.findOne({
+        let account = yield this.app.db.accounts.findOne({
             "userId": this.request.scrap.userId,
             "isMain": true //default account
         }).exec();
 
         if (!account.id) {
-            var accounts = yield this.app.db.accounts.find({
+            let accounts = yield this.app.db.accounts.find({
                 "userId": this.request.scrap.userId // get all accounts ...
             }).exec();
             account = account[0]; // ... and take first one. 
         }
 
-        var tempBen = {};
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        let tempBen = {};
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 tempBen[property] = body[property];
             }
@@ -115,9 +115,9 @@ module.exports.add = function* add(data, next) {
         console.log('will detect account number now');
         if (body.accountNumberOrUserId) {
             console.log('will now detect', body.accountNumberOrUserId);
-            var temp = body.accountNumberOrUserId;
+            let temp = body.accountNumberOrUserId;
             body.accountNumberOrUserId = undefined;
-            var beneficiaryAccount = yield this.app.db.accounts.findOne({
+            let beneficiaryAccount = yield this.app.db.accounts.findOne({
                 "num": temp
             }).exec();
             if (beneficiaryAccount) {
@@ -126,18 +126,18 @@ module.exports.add = function* add(data, next) {
                 tempBen.accountNumber = beneficiaryAccount.num;
             } else {
                 //temp is not an account number. May be it is user Id?
-                var beneficiaryUser = yield this.app.db.users.findOne({
+                let beneficiaryUser = yield this.app.db.users.findOne({
                     "userName": temp
                 }).exec();
                 if (beneficiaryUser) {
                     //user Id found. Now find his account id
-                    var beneficiaryAccounts = yield this.app.db.accounts.find({
+                    let beneficiaryAccounts = yield this.app.db.accounts.find({
                         "userId": beneficiaryUser.userId
                     }).exec();
                     if (beneficiaryAccounts.length < 1) this.throw(405, "Error: Beneficiary has no accounts");
                     //find the main account
-                    var found = false;
-                    for (var i = 0; i < beneficiaryAccounts.length; i++) {
+                    let found = false;
+                    for (let i = 0; i < beneficiaryAccounts.length; i++) {
                         if (beneficiaryAccounts[i].isMain) tempBen.accountNumber = beneficiaryAccounts[i].num;
                     }
                     if (!found) tempBen.accountNumber = beneficiaryAccounts[0].num; //simply use the first one if no accounts with isMain flag.
@@ -151,7 +151,7 @@ module.exports.add = function* add(data, next) {
             }
         }
 
-        var inserted = yield this.app.db.beneficiaries.insert(tempBen);
+        let inserted = yield this.app.db.beneficiaries.insert(tempBen);
         console.log('added the new beneficiary');
         if (!inserted || inserted < 1) {
             this.throw(405, "Error: Beneficiary could not be added.");
@@ -172,11 +172,11 @@ module.exports.add = function* add(data, next) {
 module.exports.modifyBeneficiary = function* modifyBeneficiary(id, next) {
     if ('POST' != this.method) return yield next;
 
-    var resp = {};
+    let resp = {};
     resp.success = false;
     try {
         //find beneficiaries which correspond to the userId
-        var beneficiary = yield this.app.db.beneficiaries.findOne({
+        let beneficiary = yield this.app.db.beneficiaries.findOne({
             "userId": this.request.scrap.userId,
             "beneficiaryId": id
         }).exec();
@@ -186,15 +186,15 @@ module.exports.modifyBeneficiary = function* modifyBeneficiary(id, next) {
             text: 'Beneficiary not found'
         }));
 
-        var body = yield parse.json(this);
+        let body = yield parse.json(this);
         if (!body) this.throw(405, "Error, request body is empty");
-        for (var property in body) { //blindly copy all the object properties sent in the request body
+        for (let property in body) { //blindly copy all the object properties sent in the request body
             if (body.hasOwnProperty(property)) {
                 beneficiary[property] = body[property];
             }
         }
 
-        var numChanged = yield this.app.db.beneficiaries.update({
+        let numChanged = yield this.app.db.beneficiaries.update({
             "beneficiaryId": id
         }, beneficiary, {});
 
@@ -212,9 +212,9 @@ module.exports.modifyBeneficiary = function* modifyBeneficiary(id, next) {
 //DELETE /beneficiaries/:id -> Deletes given beneficiary. 
 module.exports.deleteBeneficiary = function* deleteBeneficiary(id, next) {
     if ('DELETE' != this.method) return yield next;
-    var resp = {};
+    let resp = {};
     try {
-        var beneficiary = yield this.app.db.beneficiaries.findOne({
+        let beneficiary = yield this.app.db.beneficiaries.findOne({
             "userId": this.request.scrap.userId,
             "beneficiaryId": id
         }).exec();
@@ -224,7 +224,7 @@ module.exports.deleteBeneficiary = function* deleteBeneficiary(id, next) {
             text: 'Beneficiary not found'
         }));
 
-        var numChanged = yield this.app.db.beneficiaries.remove({
+        let numChanged = yield this.app.db.beneficiaries.remove({
             "beneficiaryId": id
         }, {});
 
